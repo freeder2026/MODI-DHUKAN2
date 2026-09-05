@@ -1,0 +1,6 @@
+{
+  "name": "Shohoj Bazar",
+  "description": "অনলাইন মুদি ও নিত্যপ্রয়োজনীয় পণ্যের শপিং অ্যাপ - চাল, ডাল, তেল, স্ন্যাক্স ও হোম ডেলিভারি",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
