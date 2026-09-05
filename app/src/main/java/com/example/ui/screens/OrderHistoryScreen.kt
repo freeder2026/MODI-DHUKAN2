@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -182,23 +183,23 @@ fun OrderCard(order: OrderEntity) {
                 }
 
                 // Status Badge
+                val (statusBg, statusFg) = when {
+                    order.status.contains("Delivered") || order.status.contains("সম্পন্ন") -> Pair(Color(0xFFF0FDF4), Color(0xFF16A34A))
+                    order.status.contains("On The Way") || order.status.contains("পথে") || order.status.contains("রওনা") -> Pair(Color(0xFFFEF3C7), Color(0xFFD97706))
+                    order.status.contains("Picked Up") || order.status.contains("পিকআপ") -> Pair(Color(0xFFEFF6FF), Color(0xFF2563EB))
+                    order.status.contains("Assigned") || order.status.contains("ন্যস্ত") -> Pair(Color(0xFFF3E8FF), Color(0xFF9333EA))
+                    else -> Pair(Color(0xFFF1F5F9), Color(0xFF475569))
+                }
+
                 Surface(
-                    color = when (order.status) {
-                        "ডেলিভারি সম্পন্ন" -> GreenPrimaryContainer
-                        "ডেলিভারির পথে" -> AmberSecondary.copy(alpha = 0.15f)
-                        else -> GreenPrimaryContainer.copy(alpha = 0.5f)
-                    },
+                    color = statusBg,
                     shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
                         text = order.status,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = when (order.status) {
-                            "ডেলিভারি সম্পন্ন" -> SuccessGreen
-                            "ডেলিভারির পথে" -> AmberSecondary
-                            else -> GreenPrimary
-                        },
+                        color = statusFg,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -246,6 +247,27 @@ fun OrderCard(order: OrderEntity) {
                 maxLines = 1,
                 modifier = Modifier.padding(top = 2.dp)
             )
+
+            if (!order.deliveryMan.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFFEFF6FF),
+                    border = BorderStroke(1.dp, Color(0xFF2563EB).copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = "🚚 রাইডার: ${order.deliveryMan}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2563EB)
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalDivider()

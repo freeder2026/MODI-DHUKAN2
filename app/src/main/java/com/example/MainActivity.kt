@@ -58,6 +58,11 @@ import com.example.ui.screens.OrderSuccessScreen
 import com.example.ui.screens.ProductDetailScreen
 import com.example.ui.screens.SearchScreen
 import com.example.ui.screens.WishlistScreen
+import com.example.ui.screens.admin.AdminDashboardScreen
+import com.example.ui.screens.auth.CustomerAuthScreen
+import com.example.ui.screens.auth.DashboardLoginScreen
+import com.example.ui.screens.auth.DashboardRole
+import com.example.ui.screens.delivery.DeliveryDashboardScreen
 import com.example.ui.theme.FlashBadgeRed
 import com.example.ui.theme.GreenOnPrimaryContainer
 import com.example.ui.theme.GreenPrimary
@@ -82,6 +87,10 @@ sealed class Screen(
     object Addresses : Screen("addresses", "ঠিকানা", Icons.Filled.Home, Icons.Outlined.Home)
     object Orders : Screen("orders", "অর্ডারসমূহ", Icons.Filled.Home, Icons.Outlined.Home)
     object Wishlist : Screen("wishlist", "পছন্দের পণ্য", Icons.Filled.Home, Icons.Outlined.Home)
+    object Admin : Screen("admin", "অ্যাডমিন প্যানেল", Icons.Filled.Person, Icons.Outlined.Person)
+    object Delivery : Screen("delivery", "ডেলিভারি ড্যাশবোর্ড", Icons.Filled.Person, Icons.Outlined.Person)
+    object DashboardLogin : Screen("dashboard_login", "ড্যাশবোর্ড লগইন", Icons.Filled.Person, Icons.Outlined.Person)
+    object CustomerAuth : Screen("customer_auth", "লগইন / রেজিস্টার", Icons.Filled.Person, Icons.Outlined.Person)
 }
 
 class MainActivity : ComponentActivity() {
@@ -128,11 +137,13 @@ fun BazarMainApp(viewModel: BazarViewModel = viewModel()) {
                 exit = fadeOut()
             ) {
                 Surface(
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp
+                    color = Color.White,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp
                 ) {
                     NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                        containerColor = Color.White,
                         tonalElevation = 0.dp
                     ) {
                         bottomNavItems.forEach { screen ->
@@ -155,7 +166,7 @@ fun BazarMainApp(viewModel: BazarViewModel = viewModel()) {
                                         BadgedBox(
                                             badge = {
                                                 Badge(
-                                                    containerColor = FlashBadgeRed,
+                                                    containerColor = Color(0xFFEF4444),
                                                     contentColor = Color.White
                                                 ) {
                                                     Text(
@@ -183,16 +194,16 @@ fun BazarMainApp(viewModel: BazarViewModel = viewModel()) {
                                 label = {
                                     Text(
                                         text = screen.title,
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        fontSize = 10.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = GreenPrimary,
-                                    selectedTextColor = GreenPrimary,
-                                    indicatorColor = GreenPrimaryContainer,
-                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    selectedIconColor = Color(0xFF4A6741),
+                                    selectedTextColor = Color(0xFF4A6741),
+                                    indicatorColor = Color(0xFFEBF2E8),
+                                    unselectedIconColor = Color(0xFF94A3B8),
+                                    unselectedTextColor = Color(0xFF94A3B8)
                                 ),
                                 modifier = Modifier.testTag("nav_${screen.route}")
                             )
@@ -217,7 +228,9 @@ fun BazarMainApp(viewModel: BazarViewModel = viewModel()) {
                         viewModel.selectProduct(product)
                         navController.navigate("product_detail/${product.id}")
                     },
-                    onNavigateToAddresses = { navController.navigate(Screen.Addresses.route) }
+                    onNavigateToAddresses = { navController.navigate(Screen.Addresses.route) },
+                    onNavigateToAdmin = { navController.navigate(Screen.Admin.route) },
+                    onNavigateToAuth = { navController.navigate(Screen.CustomerAuth.route) }
                 )
             }
 
@@ -237,7 +250,8 @@ fun BazarMainApp(viewModel: BazarViewModel = viewModel()) {
                 CartScreen(
                     viewModel = viewModel,
                     onNavigateToHome = { navController.navigate(Screen.Home.route) },
-                    onNavigateToCheckout = { navController.navigate(Screen.Checkout.route) }
+                    onNavigateToCheckout = { navController.navigate(Screen.Checkout.route) },
+                    onNavigateToAuth = { navController.navigate(Screen.CustomerAuth.route) }
                 )
             }
 
@@ -247,7 +261,10 @@ fun BazarMainApp(viewModel: BazarViewModel = viewModel()) {
                     viewModel = viewModel,
                     onNavigateToAddresses = { navController.navigate(Screen.Addresses.route) },
                     onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
-                    onNavigateToWishlist = { navController.navigate(Screen.Wishlist.route) }
+                    onNavigateToWishlist = { navController.navigate(Screen.Wishlist.route) },
+                    onNavigateToAdmin = { navController.navigate(Screen.Admin.route) },
+                    onNavigateToDelivery = { navController.navigate(Screen.Delivery.route) },
+                    onNavigateToAuth = { navController.navigate(Screen.CustomerAuth.route) }
                 )
             }
 
@@ -325,6 +342,104 @@ fun BazarMainApp(viewModel: BazarViewModel = viewModel()) {
                         navController.navigate("product_detail/${product.id}")
                     },
                     onNavigateToBrowse = { navController.navigate(Screen.Home.route) }
+                )
+            }
+
+            // 11. Admin Dashboard with Auth Gate
+            composable(Screen.Admin.route) {
+                val isAdminLoggedIn by viewModel.isAdminLoggedIn.collectAsState()
+                if (!isAdminLoggedIn) {
+                    DashboardLoginScreen(
+                        viewModel = viewModel,
+                        initialRole = DashboardRole.ADMIN,
+                        onAdminLoginSuccess = { /* Automatically refreshes into AdminDashboardScreen */ },
+                        onRiderLoginSuccess = { navController.navigate(Screen.Delivery.route) },
+                        onBackToCustomerHome = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    )
+                } else {
+                    AdminDashboardScreen(
+                        viewModel = viewModel,
+                        onNavigateToCustomerHome = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        },
+                        onNavigateToDelivery = {
+                            navController.navigate(Screen.Delivery.route)
+                        },
+                        onLogout = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    )
+                }
+            }
+
+            // 12. Delivery Dashboard with Auth Gate
+            composable(Screen.Delivery.route) {
+                val activeRider by viewModel.activeDeliveryMan.collectAsState()
+                if (activeRider == null) {
+                    DashboardLoginScreen(
+                        viewModel = viewModel,
+                        initialRole = DashboardRole.RIDER,
+                        onAdminLoginSuccess = { navController.navigate(Screen.Admin.route) },
+                        onRiderLoginSuccess = { /* Automatically refreshes into DeliveryDashboardScreen */ },
+                        onBackToCustomerHome = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    )
+                } else {
+                    DeliveryDashboardScreen(
+                        viewModel = viewModel,
+                        onNavigateToCustomerHome = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        },
+                        onNavigateToAdmin = {
+                            navController.navigate(Screen.Admin.route)
+                        },
+                        onLogout = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    )
+                }
+            }
+
+            // 13. Dedicated Dashboard Login Screen
+            composable(Screen.DashboardLogin.route) {
+                DashboardLoginScreen(
+                    viewModel = viewModel,
+                    initialRole = DashboardRole.ADMIN,
+                    onAdminLoginSuccess = { navController.navigate(Screen.Admin.route) },
+                    onRiderLoginSuccess = { navController.navigate(Screen.Delivery.route) },
+                    onBackToCustomerHome = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            // 14. Customer Login / Registration / Forgot Password Screen
+            composable(Screen.CustomerAuth.route) {
+                CustomerAuthScreen(
+                    viewModel = viewModel,
+                    onAuthSuccess = {
+                        navController.popBackStack()
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    }
                 )
             }
         }

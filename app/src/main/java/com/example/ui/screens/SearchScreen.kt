@@ -91,29 +91,31 @@ fun SearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color(0xFFFBFCFF))
     ) {
         // Search Input Header
         Surface(
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 2.dp,
-            shadowElevation = 1.dp
+            color = Color.White,
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.setSearchQuery(it) },
                     placeholder = {
                         Text(
                             text = "চাল, ডাল, তেল, বিস্কুট, দুধ, সাবান...",
-                            fontSize = 14.sp
+                            fontSize = 13.sp,
+                            color = Color(0xFF94A3B8)
                         )
                     },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "খুঁজুন",
-                            tint = GreenPrimary
+                            tint = Color(0xFF4A6741)
                         )
                     },
                     trailingIcon = {
@@ -122,34 +124,36 @@ fun SearchScreen(
                                 Icon(
                                     imageVector = Icons.Default.Clear,
                                     contentDescription = "মুছুন",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = Color(0xFF94A3B8)
                                 )
                             }
                         }
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = GreenPrimary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        focusedBorderColor = Color(0xFF4A6741),
+                        unfocusedBorderColor = Color(0xFFF1F5F9),
+                        focusedContainerColor = Color(0xFFF8FAFC),
+                        unfocusedContainerColor = Color(0xFFF8FAFC)
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("search_text_input")
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Quick Search Keyword Chips (চাল, ডাল, তেল, বিস্কুট, দুধ, সাবান)
                 Text(
                     text = "দ্রুত খুঁজুন:",
                     style = MaterialTheme.typography.labelSmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color(0xFF64748B),
                         fontWeight = FontWeight.Bold
                     )
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -158,8 +162,8 @@ fun SearchScreen(
                     items(quickSearchTags) { tag ->
                         val isSelected = searchQuery.equals(tag, ignoreCase = true)
                         Surface(
-                            color = if (isSelected) GreenPrimary else GreenPrimaryContainer.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSelected) Color(0xFF4A6741) else Color(0xFFF1F5F9),
+                            shape = RoundedCornerShape(10.dp),
                             modifier = Modifier
                                 .clickable {
                                     if (isSelected) viewModel.setSearchQuery("")
@@ -169,10 +173,10 @@ fun SearchScreen(
                         ) {
                             Text(
                                 text = tag,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else GreenPrimary,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) Color.White else Color(0xFF475569),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
                     }
@@ -188,17 +192,18 @@ fun SearchScreen(
                     items(ProductCategory.values()) { category ->
                         val isSelected = category == selectedCategory
                         Surface(
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(20.dp),
+                            color = if (isSelected) Color(0xFF4A6741) else Color(0xFFF8FAFC),
+                            border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                            shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.clickable {
                                 viewModel.setSelectedCategory(category)
                             }
                         ) {
                             Text(
                                 text = category.banglaName,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) Color.White else Color(0xFF64748B),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                             )
                         }
@@ -211,7 +216,7 @@ fun SearchScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .padding(horizontal = 18.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -219,15 +224,16 @@ fun SearchScreen(
                 text = "${sortedProducts.size} টি পণ্য পাওয়া গেছে",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color(0xFF64748B),
+                    fontSize = 12.sp
                 )
             )
 
             // Sort cycle button
             Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(8.dp),
-                border = CardDefaults.outlinedCardBorder(),
+                color = Color.White,
+                shape = RoundedCornerShape(10.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
                 modifier = Modifier.clickable {
                     activeSort = when (activeSort) {
                         SortOption.POPULAR -> SortOption.PRICE_LOW_HIGH

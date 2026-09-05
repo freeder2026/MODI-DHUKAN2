@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -68,12 +71,18 @@ fun AccountScreen(
     viewModel: BazarViewModel,
     onNavigateToAddresses: () -> Unit,
     onNavigateToOrders: () -> Unit,
-    onNavigateToWishlist: () -> Unit
+    onNavigateToWishlist: () -> Unit,
+    onNavigateToAdmin: () -> Unit = {},
+    onNavigateToDelivery: () -> Unit = {},
+    onNavigateToAuth: () -> Unit = {}
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
+    val isCustomerLoggedIn = userProfile?.isLoggedIn == true && !userProfile?.phone.isNullOrBlank()
     val wishlistItems by viewModel.wishlistItems.collectAsState()
     val orders by viewModel.orders.collectAsState()
     val addresses by viewModel.addresses.collectAsState()
+    val isAdminLoggedIn by viewModel.isAdminLoggedIn.collectAsState()
+    val activeDeliveryMan by viewModel.activeDeliveryMan.collectAsState()
 
     var showLoginDialog by remember { mutableStateOf(false) }
     var showEditProfileDialog by remember { mutableStateOf(false) }
@@ -143,7 +152,7 @@ fun AccountScreen(
                             Spacer(modifier = Modifier.width(14.dp))
 
                             Column(modifier = Modifier.weight(1f)) {
-                                if (userProfile != null) {
+                                if (isCustomerLoggedIn && userProfile != null) {
                                     Text(
                                         text = userProfile!!.name,
                                         style = MaterialTheme.typography.titleMedium.copy(
@@ -166,39 +175,51 @@ fun AccountScreen(
                                     }
                                 } else {
                                     Text(
-                                        text = "লগইন করা নেই",
+                                        text = "গেস্ট গ্রাহক (লগইন করা নেই)",
                                         style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp
                                         )
                                     )
                                     Text(
-                                        text = "মোবাইল নম্বর দিয়ে রেজিস্ট্রেশন বা লগইন করুন",
-                                        fontSize = 12.sp,
+                                        text = "অর্ডার করতে ও অফার পেতে একাউন্ট লগইন করুন",
+                                        fontSize = 11.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
 
-                            if (userProfile != null) {
-                                IconButton(onClick = {
-                                    nameInput = userProfile!!.name
-                                    phoneInput = userProfile!!.phone
-                                    emailInput = userProfile!!.email
-                                    showEditProfileDialog = true
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "প্রোফাইল পরিবর্তন",
-                                        tint = GreenPrimary
-                                    )
+                            if (isCustomerLoggedIn && userProfile != null) {
+                                Row {
+                                    IconButton(onClick = {
+                                        nameInput = userProfile!!.name
+                                        phoneInput = userProfile!!.phone
+                                        emailInput = userProfile!!.email
+                                        showEditProfileDialog = true
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "প্রোফাইল পরিবর্তন",
+                                            tint = GreenPrimary
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        viewModel.logoutCustomer()
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Logout,
+                                            contentDescription = "লগআউট",
+                                            tint = Color(0xFFEF4444)
+                                        )
+                                    }
                                 }
                             } else {
                                 Button(
-                                    onClick = { showLoginDialog = true },
+                                    onClick = onNavigateToAuth,
                                     colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("লগইন", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text("লগইন / রেজিস্টার", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -276,6 +297,136 @@ fun AccountScreen(
                             onClick = onNavigateToAddresses,
                             testTag = "menu_addresses"
                         )
+                    }
+                }
+            }
+
+            // Admin Control Panel Entry
+            item {
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEBF2E8)),
+                    border = BorderStroke(1.dp, GreenPrimary.copy(alpha = 0.35f)),
+                    onClick = onNavigateToAdmin,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("admin_dashboard_entry_card")
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = GreenPrimary,
+                                modifier = Modifier.size(42.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.AdminPanelSettings,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "দোকান পরিচালনা (Admin Panel)",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF0F172A)
+                                )
+                                Text(
+                                    text = if (isAdminLoggedIn) "🟢 অ্যাডমিন সক্রিয় • ড্যাশবোর্ড দেখুন" else "🔒 আলাদা লগইন প্রয়োজন (PIN: 1234)",
+                                    fontSize = 11.sp,
+                                    color = if (isAdminLoggedIn) GreenPrimary else Color(0xFF64748B),
+                                    fontWeight = if (isAdminLoggedIn) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            }
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = if (isAdminLoggedIn) GreenPrimary else Color(0xFF1E293B)
+                        ) {
+                            Text(
+                                text = if (isAdminLoggedIn) "প্রবেশ করুন" else "লগইন",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Delivery Man Panel Entry
+            item {
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)),
+                    border = BorderStroke(1.dp, Color(0xFF2563EB).copy(alpha = 0.35f)),
+                    onClick = onNavigateToDelivery,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("delivery_dashboard_entry_card")
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = Color(0xFF2563EB),
+                                modifier = Modifier.size(42.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.TwoWheeler,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "ডেলিভারি সিস্টেম (Delivery Panel)",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF0F172A)
+                                )
+                                Text(
+                                    text = if (activeDeliveryMan != null) "🟢 সক্রিয় রাইডার: ${activeDeliveryMan?.name}" else "🔒 আলাদা রাইডার লগইন প্রয়োজন",
+                                    fontSize = 11.sp,
+                                    color = if (activeDeliveryMan != null) Color(0xFF2563EB) else Color(0xFF64748B),
+                                    fontWeight = if (activeDeliveryMan != null) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            }
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = if (activeDeliveryMan != null) Color(0xFF2563EB) else Color(0xFF0F172A)
+                        ) {
+                            Text(
+                                text = if (activeDeliveryMan != null) "ড্যাশবোর্ড" else "লগইন",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                            )
+                        }
                     }
                 }
             }

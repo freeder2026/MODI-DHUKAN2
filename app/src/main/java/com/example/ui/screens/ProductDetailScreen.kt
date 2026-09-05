@@ -82,16 +82,18 @@ fun ProductDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "পণ্যের বিবরণ (Details)",
+                        text = "পণ্যের বিবরণ",
                         fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F172A)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("detail_back_button")) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "ফিরে যান"
+                            contentDescription = "ফিরে যান",
+                            tint = Color(0xFF334155)
                         )
                     }
                 },
@@ -103,25 +105,26 @@ fun ProductDetailScreen(
                         Icon(
                             imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "উইশলিস্ট",
-                            tint = if (isWishlisted) FlashBadgeRed else MaterialTheme.colorScheme.onSurface
+                            tint = if (isWishlisted) Color(0xFFEF4444) else Color(0xFF94A3B8)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = Color(0xFFFBFCFF)
                 )
             )
         },
         bottomBar = {
             Surface(
-                tonalElevation = 6.dp,
-                shadowElevation = 8.dp,
-                color = MaterialTheme.colorScheme.surface
+                color = Color.White,
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 18.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -130,28 +133,37 @@ fun ProductDetailScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .background(
-                                MaterialTheme.colorScheme.surfaceVariant,
+                                Color(0xFFF1F5F9),
                                 RoundedCornerShape(12.dp)
                             )
-                            .padding(4.dp)
+                            .padding(2.dp)
                     ) {
                         IconButton(
                             onClick = { if (quantity > 1) quantity-- },
                             modifier = Modifier.size(36.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Remove, contentDescription = "কমান")
+                            Icon(
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = "কমান",
+                                tint = Color(0xFF4A6741)
+                            )
                         }
                         Text(
                             text = quantity.toString(),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(horizontal = 10.dp)
+                            fontSize = 15.sp,
+                            color = Color(0xFF0F172A),
+                            modifier = Modifier.padding(horizontal = 8.dp)
                         )
                         IconButton(
                             onClick = { quantity++ },
                             modifier = Modifier.size(36.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = "বাড়ান")
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "বাড়ান",
+                                tint = Color(0xFF4A6741)
+                            )
                         }
                     }
 
@@ -161,7 +173,7 @@ fun ProductDetailScreen(
                             viewModel.addToCart(product, quantity)
                             onNavigateToCart()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A6741)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .weight(1f)
@@ -172,14 +184,14 @@ fun ProductDetailScreen(
                             imageVector = Icons.Default.ShoppingCart,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "কার্টে যোগ করুন (৳${(product.price * quantity).toInt()})",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
+                            fontSize = 13.sp
                         )
                     }
                 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -72,19 +73,20 @@ fun TopStoreHeader(
     onSearchClick: () -> Unit,
     onCartClick: () -> Unit,
     onAddressClick: () -> Unit,
+    onAdminClick: (() -> Unit)? = null,
     currentAddress: String = "মিরপুর-১০, ঢাকা"
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        shadowElevation = 2.dp
+        color = Color(0xFFFBFCFF),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .padding(horizontal = 18.dp, vertical = 12.dp)
         ) {
-            // Store Logo, Name and Action Icons
+            // Store Logo, Name and Action Circular Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -94,123 +96,155 @@ fun TopStoreHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.shohoj_bazar_logo),
-                        contentDescription = "দোকানের লোগো",
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Surface(
+                        color = Color(0xFF4A6741),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "SB",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "সহজ বাজার",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = GreenPrimary,
-                                    fontSize = 20.sp
-                                )
+                        Text(
+                            text = "সহজ বাজার",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0F172A),
+                                fontSize = 18.sp,
+                                lineHeight = 22.sp
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Surface(
-                                color = GreenPrimaryContainer,
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(
-                                    text = "SHOP",
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = GreenPrimary,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                        // Location Picker Indicator
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clickable { onAddressClick() }
-                                .padding(vertical = 1.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.LocationOn,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = "GROCERY & MORE",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = Color(0xFF64748B),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 1.sp
                             )
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = currentAddress,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 11.sp
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        )
                     }
                 }
 
-                // Cart Icon with Badge
-                BadgedBox(
-                    badge = {
-                        if (cartCount > 0) {
-                            Badge(
-                                containerColor = FlashBadgeRed,
-                                contentColor = Color.White
-                            ) {
-                                Text(
-                                    text = cartCount.toString(),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Admin Dashboard Shortcut Button
+                    if (onAdminClick != null) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFEBF2E8),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4A6741).copy(alpha = 0.3f)),
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clickable { onAdminClick() }
+                                .testTag("top_admin_button")
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("🛡️", fontSize = 16.sp)
                             }
                         }
                     }
-                ) {
-                    IconButton(
-                        onClick = onCartClick,
-                        modifier = Modifier.testTag("top_cart_button")
+
+                    // Delivery Location Button
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.White,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                        shadowElevation = 1.dp,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clickable { onAddressClick() }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = "শপিং কার্ট",
-                            tint = GreenPrimary,
-                            modifier = Modifier.size(26.dp)
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "ডেলিভারি ঠিকানা",
+                                tint = Color(0xFF4A6741),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    // Cart Icon with Sleek Badge
+                    Box {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.White,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                            shadowElevation = 1.dp,
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clickable { onCartClick() }
+                                .testTag("top_cart_button")
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.ShoppingCart,
+                                    contentDescription = "শপিং কার্ট",
+                                    tint = Color(0xFF334155),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        if (cartCount > 0) {
+                            Surface(
+                                color = Color(0xFFEF4444),
+                                shape = CircleShape,
+                                border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFBFCFF)),
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(20.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = cartCount.toString(),
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // Quick Search Bar Box
+            // Sleek Search Bar (bg-slate-100, rounded-2xl)
             Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(12.dp),
-                border = CardDefaults.outlinedCardBorder(),
+                color = Color(0xFFF1F5F9),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(46.dp)
+                    .height(48.dp)
                     .clickable { onSearchClick() }
                     .testTag("home_search_bar")
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 14.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "সার্চ",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = Color(0xFF94A3B8),
+                        modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "চাল, ডাল, তেল, বিস্কুট, দুধ, সাবান খুঁজুন...",
+                        text = "চাল, ডাল, তেল খুঁজুন...",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            color = Color(0xFF94A3B8),
                             fontSize = 13.sp
                         ),
                         maxLines = 1,
@@ -229,71 +263,74 @@ fun LargeBannerSection(
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp)
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp)
     ) {
         item {
             Card(
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                shape = RoundedCornerShape(24.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier
                     .width(320.dp)
-                    .height(150.dp)
+                    .height(140.dp)
                     .clickable { onBannerClick("flash") }
                     .testTag("banner_flash_sale")
             ) {
-                Box {
-                    Image(
-                        painter = painterResource(id = R.drawable.banner_flash_sale),
-                        contentDescription = "ফ্ল্যাশ সেল অফার ব্যানার",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxWidth().height(150.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Black.copy(alpha = 0.55f),
-                                        Color.Transparent
-                                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFF4A6741),
+                                    Color(0xFF6A8E5C)
                                 )
                             )
+                        )
+                ) {
+                    // Subtle background pattern decoration
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.12f),
+                        modifier = Modifier
+                            .size(110.dp)
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 6.dp, bottom = 4.dp)
                     )
+
                     Column(
                         modifier = Modifier
-                            .padding(14.dp)
-                            .align(Alignment.CenterStart)
+                            .fillMaxSize()
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Surface(
-                            color = FlashBadgeRed,
-                            shape = RoundedCornerShape(6.dp)
+                            color = Color(0xFFFACC15), // yellow-400
+                            shape = CircleShape
                         ) {
                             Text(
-                                text = "⚡ স্পেশাল অফার",
-                                color = Color.White,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
+                                text = "FLASH SALE",
+                                color = Color(0xFF4A6741),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "দৈনিক মুদি বাজারে\n৩০% পর্যন্ত ছাড়!",
+                            text = "সেরা পণ্যে ১৫% ছাড়!",
                             color = Color.White,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 17.sp,
-                            lineHeight = 22.sp
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "আজই অর্ডার করুন ➔",
-                            color = Color(0xFFFEF08A),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontSize = 20.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "সীমিত সময়ের জন্য অফার",
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 12.sp,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         )
                     }
                 }
@@ -302,65 +339,57 @@ fun LargeBannerSection(
 
         item {
             Card(
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                shape = RoundedCornerShape(24.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier
                     .width(320.dp)
-                    .height(150.dp)
+                    .height(140.dp)
                     .clickable { onBannerClick("mega") }
                     .testTag("banner_grocery_mega")
             ) {
-                Box {
-                    Image(
-                        painter = painterResource(id = R.drawable.banner_grocery_mega),
-                        contentDescription = "মেগা অফার ব্যানার",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxWidth().height(150.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Black.copy(alpha = 0.5f),
-                                        Color.Transparent
-                                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFF2E4029),
+                                    Color(0xFF4A6741)
                                 )
                             )
-                    )
+                        )
+                ) {
                     Column(
                         modifier = Modifier
-                            .padding(14.dp)
-                            .align(Alignment.CenterStart)
+                            .fillMaxSize()
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Surface(
-                            color = GreenPrimary,
-                            shape = RoundedCornerShape(6.dp)
+                            color = Color(0xFFFACC15),
+                            shape = CircleShape
                         ) {
                             Text(
-                                text = "🚀 সুপার ফাস্ট ডেলিভারি",
-                                color = Color.White,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
+                                text = "FREE DELIVERY",
+                                color = Color(0xFF4A6741),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "৳১০০০+ অর্ডারে\nফ্রি ডেলিভারি!",
+                            text = "৳১০০০+ অর্ডারে ফ্রি ডেলিভারি",
                             color = Color.White,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 17.sp,
-                            lineHeight = 22.sp
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 19.sp
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "কুপন কোড: SHOHOJ50",
-                            color = Color(0xFFBAE6FD),
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 12.sp
+                            color = Color(0xFFFEF08A),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
@@ -374,69 +403,95 @@ fun CategorySelectorRow(
     selectedCategory: ProductCategory,
     onSelectCategory: (ProductCategory) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 18.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "জনপ্রিয় ক্যাটাগরি",
+                text = "ক্যাটাগরি",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    color = Color(0xFF1E293B),
+                    fontSize = 17.sp
                 )
             )
             Text(
                 text = "সব দেখুন",
                 style = MaterialTheme.typography.labelMedium.copy(
-                    color = GreenPrimary,
-                    fontWeight = FontWeight.SemiBold
+                    color = Color(0xFF4A6741),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
                 ),
                 modifier = Modifier.clickable { onSelectCategory(ProductCategory.ALL) }
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             items(ProductCategory.values()) { category ->
                 val isSelected = category == selectedCategory
-                Surface(
-                    color = if (isSelected) GreenPrimary else MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(12.dp),
-                    shadowElevation = if (isSelected) 2.dp else 1.dp,
-                    border = if (isSelected) null else CardDefaults.outlinedCardBorder(),
+
+                val (pastelBg, emoji) = when (category) {
+                    ProductCategory.ALL -> Pair(Color(0xFFF1F5F9), "🛒")
+                    ProductCategory.RICE -> Pair(Color(0xFFFFF7ED), "🍚") // Orange-50
+                    ProductCategory.DAL -> Pair(Color(0xFFFEFCE8), "🫘") // Yellow-50
+                    ProductCategory.OIL -> Pair(Color(0xFFEFF6FF), "🧴") // Blue-50
+                    ProductCategory.BISCUIT -> Pair(Color(0xFFFFF7ED), "🍪")
+                    ProductCategory.MILK -> Pair(Color(0xFFF0FDF4), "🥛") // Green-50
+                    ProductCategory.SOAP -> Pair(Color(0xFFFDF2F8), "🧼") // Pink-50
+                    ProductCategory.SPICE -> Pair(Color(0xFFFEFCE8), "🌶️")
+                    ProductCategory.TEA -> Pair(Color(0xFFFAF5FF), "☕")
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .clickable { onSelectCategory(category) }
                         .testTag("category_${category.id}")
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        color = if (isSelected) Color(0xFF4A6741) else pastelBg,
+                        shape = RoundedCornerShape(18.dp),
+                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                        shadowElevation = if (isSelected) 2.dp else 0.dp,
+                        modifier = Modifier.size(56.dp)
                     ) {
-                        Icon(
-                            imageVector = category.icon,
-                            contentDescription = category.banglaName,
-                            tint = if (isSelected) Color.White else GreenPrimary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = category.banglaName,
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                fontSize = 13.sp
-                            )
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = category.icon,
+                                    contentDescription = category.banglaName,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            } else {
+                                Text(
+                                    text = emoji,
+                                    fontSize = 24.sp
+                                )
+                            }
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = category.banglaName,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) Color(0xFF4A6741) else Color(0xFF475569),
+                            fontSize = 11.sp
+                        )
+                    )
                 }
             }
         }
@@ -522,9 +577,10 @@ fun ProductCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
         modifier = modifier
             .clickable { onProductClick() }
             .testTag("product_card_${product.id}")
@@ -532,234 +588,175 @@ fun ProductCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
+                .padding(12.dp)
         ) {
-            // Top Image Box with Badges & Wishlist
+            // Top Image Box with Category Art
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(115.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
-                            )
-                        )
-                    )
+                    .height(96.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFFF8FAFC))
             ) {
                 // Category Icon Illustration in Center
                 Box(
                     modifier = Modifier
-                        .size(54.dp)
+                        .size(46.dp)
                         .align(Alignment.Center)
-                        .background(GreenPrimaryContainer.copy(alpha = 0.5f), CircleShape),
+                        .background(Color(0xFFEBF2E8), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = product.category.icon,
                         contentDescription = null,
-                        tint = GreenPrimary,
-                        modifier = Modifier.size(30.dp)
+                        tint = Color(0xFF4A6741),
+                        modifier = Modifier.size(26.dp)
                     )
-                }
-
-                // Discount Badge (Top-Left)
-                if (product.discountPercent > 0) {
-                    Surface(
-                        color = FlashBadgeRed,
-                        shape = RoundedCornerShape(bottomEnd = 8.dp, topStart = 10.dp),
-                        modifier = Modifier.align(Alignment.TopStart)
-                    ) {
-                        Text(
-                            text = "-${product.discountPercent}%",
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
                 }
 
                 // Wishlist Toggle (Top-Right)
                 IconButton(
                     onClick = onToggleWishlist,
                     modifier = Modifier
-                        .size(34.dp)
+                        .size(30.dp)
                         .align(Alignment.TopEnd)
+                        .padding(2.dp)
                         .testTag("wishlist_btn_${product.id}")
                 ) {
                     Icon(
                         imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "পছন্দের তালিকায় রাখুন",
-                        tint = if (isWishlisted) FlashBadgeRed else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                // Weight Tag (Bottom-Start)
-                Surface(
-                    color = Color.Black.copy(alpha = 0.55f),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(6.dp)
-                ) {
-                    Text(
-                        text = product.weightOrVolume,
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                        tint = if (isWishlisted) Color(0xFFEF4444) else Color(0xFF94A3B8),
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Stock status
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .background(if (product.inStock) SuccessGreen else Color.Gray, CircleShape)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = if (product.inStock) "স্টকে আছে" else "স্টক আউট",
-                    fontSize = 10.sp,
-                    color = if (product.inStock) SuccessGreen else Color.Gray,
-                    fontWeight = FontWeight.Bold
-                )
+            // Sleek Status Pills (Emerald / Red)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (product.inStock) {
+                    Surface(
+                        color = Color(0xFFECFDF5), // emerald-50
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = "স্টকে আছে",
+                            color = Color(0xFF059669), // emerald-600
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+                if (product.discountPercent > 0) {
+                    Surface(
+                        color = Color(0xFFFEF2F2), // red-50
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = "${product.discountPercent}% ছাড়",
+                            color = Color(0xFFEF4444), // red-500
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Product Bangla Name
             Text(
                 text = product.banglaName,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp,
-                    lineHeight = 17.sp
-                ),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.height(36.dp)
-            )
-
-            // Brand
-            Text(
-                text = product.brand,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 10.sp
+                    color = Color(0xFF334155),
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            // Weight & Price
+            Text(
+                text = "৳${product.price.toInt()} • ${product.weightOrVolume}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = Color(0xFF94A3B8),
+                    fontSize = 11.sp
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+            )
 
-            // Price & Add to cart button row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            // Add to Cart Button (w-full bg-[#4A6741] text-white text-[11px] font-bold py-2 rounded-lg)
+            if (cartQuantity == 0) {
+                Surface(
+                    color = Color(0xFF4A6741),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(34.dp)
+                        .clickable { onAddToCart() }
+                        .testTag("add_cart_${product.id}")
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = "৳${product.price.toInt()}",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Black,
-                                color = GreenPrimary,
-                                fontSize = 15.sp
-                            )
+                            text = "কার্টে যোগ",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                        if (product.originalPrice > product.price) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "৳${product.originalPrice.toInt()}",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    textDecoration = TextDecoration.LineThrough,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    fontSize = 11.sp
-                                )
-                            )
-                        }
                     }
                 }
-
-                // Add to Cart Button / Quantity Stepper
-                if (cartQuantity == 0) {
-                    Surface(
-                        color = GreenPrimary,
-                        shape = RoundedCornerShape(8.dp),
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(34.dp)
+                        .background(Color(0xFFEBF2E8), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 6.dp)
+                ) {
+                    Box(
                         modifier = Modifier
-                            .clickable { onAddToCart() }
-                            .testTag("add_cart_${product.id}")
+                            .size(28.dp)
+                            .clickable { onUpdateQuantity(cartQuantity - 1) },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "কার্টে যোগ করুন",
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = "যোগ",
-                                color = Color.White,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .background(GreenPrimaryContainer, RoundedCornerShape(8.dp))
-                            .padding(2.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable { onUpdateQuantity(cartQuantity - 1) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Remove,
-                                contentDescription = "কমান",
-                                tint = GreenPrimary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                        Text(
-                            text = cartQuantity.toString(),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = GreenPrimary,
-                            modifier = Modifier.padding(horizontal = 5.dp)
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = "কমান",
+                            tint = Color(0xFF4A6741),
+                            modifier = Modifier.size(16.dp)
                         )
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable { onUpdateQuantity(cartQuantity + 1) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "বাড়ান",
-                                tint = GreenPrimary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
+                    }
+                    Text(
+                        text = cartQuantity.toString(),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4A6741)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clickable { onUpdateQuantity(cartQuantity + 1) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "বাড়ান",
+                            tint = Color(0xFF4A6741),
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                 }
             }

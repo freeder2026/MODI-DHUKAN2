@@ -12,15 +12,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -55,13 +59,17 @@ fun HomeScreen(
     onNavigateToSearch: () -> Unit,
     onNavigateToCart: () -> Unit,
     onNavigateToProductDetail: (Product) -> Unit,
-    onNavigateToAddresses: () -> Unit
+    onNavigateToAddresses: () -> Unit,
+    onNavigateToAdmin: () -> Unit = {},
+    onNavigateToAuth: () -> Unit = {}
 ) {
     val cartItems by viewModel.cartItems.collectAsState()
     val wishlistItems by viewModel.wishlistItems.collectAsState()
     val addresses by viewModel.addresses.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val flashSaleTime by viewModel.flashSaleTimeLeft.collectAsState()
+    val userProfile by viewModel.userProfile.collectAsState()
+    val isCustomerLoggedIn = userProfile?.isLoggedIn == true && !userProfile?.phone.isNullOrBlank()
 
     val currentAddressTitle = addresses.firstOrNull { it.isDefault }?.let {
         "${it.area}, ${it.city.take(4)}"
@@ -79,12 +87,13 @@ fun HomeScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Sticky Top Header with Logo, Store Name, Location & Cart Badge
+        // Sticky Top Header with Logo, Store Name, Location, Admin & Cart Badge
         TopStoreHeader(
             cartCount = cartItems.sumOf { it.quantity },
             onSearchClick = onNavigateToSearch,
             onCartClick = onNavigateToCart,
             onAddressClick = onNavigateToAddresses,
+            onAdminClick = onNavigateToAdmin,
             currentAddress = currentAddressTitle
         )
 
@@ -103,6 +112,57 @@ fun HomeScreen(
                         }
                     }
                 )
+            }
+
+            // Guest Welcome & Discount Teaser (লোভনীয় অফার ও লগইন আমন্ত্রণ)
+            if (!isCustomerLoggedIn) {
+                item {
+                    Card(
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFF59E0B)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("🎁", fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "নতুন গ্রাহক স্পেশাল অফার!",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 13.sp,
+                                        color = Color(0xFF92400E)
+                                    )
+                                }
+                                Text(
+                                    text = "রেজিস্ট্রেশন বা লগইন করলেই পাচ্ছেন ৳৫০ ছাড় ও ফ্রি হোম ডেলিভারি!",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFFB45309),
+                                    modifier = Modifier.padding(top = 2.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = onNavigateToAuth,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97706)),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Text("লগইন / রেজিস্টার", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
             }
 
             // Popular Categories (জনপ্রিয় ক্যাটাগরি - চাল, ডাল, তেল, বিস্কুট, ইত্যাদি)
@@ -154,58 +214,63 @@ fun HomeScreen(
             item {
                 Spacer(modifier = Modifier.height(18.dp))
                 Card(
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        containerColor = Color(0xFFFEFCE8) // soft warm pastel
                     ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFEF08A)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 18.dp)
                         .clickable { onNavigateToCart() }
                         .testTag("discount_promo_card")
                 ) {
                     Row(
-                        modifier = Modifier.padding(14.dp),
+                        modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            color = AmberSecondary,
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.padding(end = 12.dp)
+                            color = Color(0xFFCA8A04),
+                            shape = CircleShape,
+                            modifier = Modifier.size(42.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.LocalOffer,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.padding(8.dp)
-                            )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.LocalOffer,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
                         }
+                        Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "কুপন কোড: SHOHOJ50",
                                 style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF713F12)
                                 )
                             )
                             Text(
                                 text = "যে কোনো অর্ডারে সাথে সাথে ৳৫০ ছাড় পান!",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
-                                    fontSize = 12.sp
+                                    color = Color(0xFF854D0E),
+                                    fontSize = 11.sp
                                 )
                             )
                         }
                         Surface(
-                            color = GreenPrimary,
-                            shape = RoundedCornerShape(6.dp)
+                            color = Color(0xFF4A6741),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = "ব্যবহার করুন",
+                                text = "ক্লেম",
                                 color = Color.White,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
                     }
@@ -218,30 +283,24 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(horizontal = 18.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = AmberSecondary,
-                            modifier = Modifier.padding(end = 6.dp)
+                    Text(
+                        text = "জনপ্রিয় পণ্য",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F172A),
+                            fontSize = 17.sp
                         )
-                        Text(
-                            text = "জনপ্রিয় পণ্য (Popular Products)",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        )
-                    }
+                    )
                     Text(
                         text = "সব দেখুন",
                         style = MaterialTheme.typography.labelMedium.copy(
-                            color = GreenPrimary,
-                            fontWeight = FontWeight.Bold
+                            color = Color(0xFF4A6741),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
                         ),
                         modifier = Modifier.clickable { onNavigateToSearch() }
                     )
@@ -253,7 +312,7 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(horizontal = 18.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     ProductCard(
@@ -296,30 +355,24 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(horizontal = 18.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.NewReleases,
-                            contentDescription = null,
-                            tint = GreenPrimary,
-                            modifier = Modifier.padding(end = 6.dp)
+                    Text(
+                        text = "নতুন পণ্য",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F172A),
+                            fontSize = 17.sp
                         )
-                        Text(
-                            text = "নতুন পণ্য (New Arrivals)",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        )
-                    }
+                    )
                     Text(
                         text = "সব দেখুন",
                         style = MaterialTheme.typography.labelMedium.copy(
-                            color = GreenPrimary,
-                            fontWeight = FontWeight.Bold
+                            color = Color(0xFF4A6741),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
                         ),
                         modifier = Modifier.clickable { onNavigateToSearch() }
                     )
@@ -328,7 +381,7 @@ fun HomeScreen(
 
             item {
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    contentPadding = PaddingValues(horizontal = 18.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(newArrivals) { product ->
@@ -343,7 +396,7 @@ fun HomeScreen(
                             onAddToCart = { viewModel.addToCart(product) },
                             onUpdateQuantity = { qty -> viewModel.updateCartQuantity(product.id, qty) },
                             onToggleWishlist = { viewModel.toggleWishlist(product) },
-                            modifier = Modifier.width(165.dp)
+                            modifier = Modifier.width(160.dp)
                         )
                     }
                 }

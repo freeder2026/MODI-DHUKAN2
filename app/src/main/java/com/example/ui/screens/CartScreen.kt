@@ -73,15 +73,19 @@ import com.example.ui.theme.SuccessGreen
 fun CartScreen(
     viewModel: BazarViewModel,
     onNavigateToHome: () -> Unit,
-    onNavigateToCheckout: () -> Unit
+    onNavigateToCheckout: () -> Unit,
+    onNavigateToAuth: () -> Unit = {}
 ) {
     val cartItems by viewModel.cartItems.collectAsState()
     val subtotal by viewModel.cartSubtotal.collectAsState()
     val appliedDiscount by viewModel.appliedDiscount.collectAsState()
     val couponMessage by viewModel.couponMessage.collectAsState()
     val deliveryMethod by viewModel.selectedDeliveryMethod.collectAsState()
+    val userProfile by viewModel.userProfile.collectAsState()
+    val isCustomerLoggedIn = userProfile?.isLoggedIn == true && !userProfile?.phone.isNullOrBlank()
 
     var promoInput by remember { mutableStateOf("") }
+    var showGuestLoginPromptDialog by remember { mutableStateOf(false) }
 
     val deliveryCharge = if (subtotal >= 1000.0 && deliveryMethod == DeliveryMethod.REGULAR) 0.0 else deliveryMethod.fee
     val finalTotal = (subtotal + deliveryCharge - appliedDiscount).coerceAtLeast(0.0)
@@ -92,14 +96,15 @@ fun CartScreen(
                 title = {
                     Column {
                         Text(
-                            text = "শপিং কার্ট (Shopping Cart)",
+                            text = "শপিং কার্ট",
                             fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F172A)
                         )
                         Text(
                             text = "${cartItems.sumOf { it.quantity }} টি পণ্য যোগ করা হয়েছে",
                             fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Color(0xFF64748B)
                         )
                     }
                 },
@@ -111,27 +116,28 @@ fun CartScreen(
                         ) {
                             Text(
                                 text = "সব মুছুন",
-                                color = ErrorRed,
+                                color = Color(0xFFEF4444),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFBFCFF))
             )
         },
         bottomBar = {
             if (cartItems.isNotEmpty()) {
                 Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 8.dp,
-                    shadowElevation = 8.dp
+                    color = Color.White,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .padding(horizontal = 18.dp, vertical = 14.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -140,23 +146,29 @@ fun CartScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "সর্বমোট প্রদেয় (Final Total):",
+                                    text = "সর্বমোট প্রদেয়:",
                                     fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = Color(0xFF64748B)
                                 )
                                 Text(
                                     text = "৳${finalTotal.toInt()}",
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.Black,
-                                        color = GreenPrimary,
+                                        color = Color(0xFF4A6741),
                                         fontSize = 22.sp
                                     )
                                 )
                             }
 
                             Button(
-                                onClick = onNavigateToCheckout,
-                                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                                onClick = {
+                                    if (isCustomerLoggedIn) {
+                                        onNavigateToCheckout()
+                                    } else {
+                                        showGuestLoginPromptDialog = true
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A6741)),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier
                                     .height(48.dp)
@@ -245,6 +257,38 @@ fun CartScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Guest Exclusive Offer Card
+                if (!isCustomerLoggedIn) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBEB)),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFDE68A)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("🎁 নতুন গ্রাহক ছাড় অফার!", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFFB45309))
+                                    Text("লগইন বা রেজিস্ট্রেশন করলেই প্রথম অর্ডারে নিশ্চিত ছাড়!", fontSize = 11.sp, color = Color(0xFF92400E))
+                                }
+                                Button(
+                                    onClick = onNavigateToAuth,
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97706)),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Text("লগইন / সাইনআপ", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Free Delivery Progress Banner (৳১০০০ এ ফ্রি ডেলিভারি)
                 item {
                     val progress = (subtotal / 1000.0).toFloat().coerceIn(0f, 1f)
@@ -469,6 +513,58 @@ fun CartScreen(
             }
         }
     }
+
+    if (showGuestLoginPromptDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showGuestLoginPromptDialog = false },
+            title = {
+                Text(
+                    text = "🔒 অর্ডার করতে লগইন আবশ্যক",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "আপনি বর্তমানে গেস্ট মুডে আছেন। পণ্য ও অফার দেখার সুবিধা থাকলেও অর্ডার প্লেস করার জন্য আপনার একাউন্টে লগইন বা রেজিস্ট্রেশন করতে হবে।",
+                        fontSize = 13.sp,
+                        color = Color(0xFF334155)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFFEF3C7),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "🎁 এখনই রেজিস্ট্রেশন বা লগইন করলে প্রথম অর্ডারে পাবেন নিশ্চিত ছাড় ও দ্রুত হোম ডেলিভারি!",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF92400E),
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showGuestLoginPromptDialog = false
+                        onNavigateToAuth()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A6741))
+                ) {
+                    Text("লগইন / রেজিস্টার করুন")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showGuestLoginPromptDialog = false }) {
+                    Text("পরে করবো")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -479,34 +575,35 @@ fun CartItemRow(
     onDelete: () -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F5F9)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon thumbnail
             Surface(
-                color = GreenPrimaryContainer.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFFEBF2E8),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.size(50.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.ShoppingBag,
                         contentDescription = null,
-                        tint = GreenPrimary,
-                        modifier = Modifier.size(26.dp)
+                        tint = Color(0xFF4A6741),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             // Details
             Column(modifier = Modifier.weight(1f)) {
@@ -514,26 +611,27 @@ fun CartItemRow(
                     text = item.banglaName,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+                        fontSize = 13.sp,
+                        color = Color(0xFF0F172A)
                     ),
                     maxLines = 1
                 )
                 Text(
                     text = item.weightOrVolume,
                     fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color(0xFF64748B)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "৳${item.price.toInt()}",
                         fontWeight = FontWeight.ExtraBold,
-                        color = GreenPrimary,
+                        color = Color(0xFF4A6741),
                         fontSize = 13.sp
                     )
                     Text(
                         text = " × ${item.quantity} = ৳${(item.price * item.quantity).toInt()}",
                         fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
                 }
             }
@@ -542,7 +640,7 @@ fun CartItemRow(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(GreenPrimaryContainer, RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF1F5F9), RoundedCornerShape(8.dp))
                     .padding(2.dp)
             ) {
                 Box(
@@ -554,7 +652,7 @@ fun CartItemRow(
                     Icon(
                         imageVector = Icons.Default.Remove,
                         contentDescription = "কমান",
-                        tint = GreenPrimary,
+                        tint = Color(0xFF4A6741),
                         modifier = Modifier.size(14.dp)
                     )
                 }
@@ -562,7 +660,7 @@ fun CartItemRow(
                     text = item.quantity.toString(),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = GreenPrimary,
+                    color = Color(0xFF0F172A),
                     modifier = Modifier.padding(horizontal = 6.dp)
                 )
                 Box(
@@ -574,7 +672,7 @@ fun CartItemRow(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "বাড়ান",
-                        tint = GreenPrimary,
+                        tint = Color(0xFF4A6741),
                         modifier = Modifier.size(14.dp)
                     )
                 }
@@ -588,7 +686,7 @@ fun CartItemRow(
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = "মুছে ফেলুন",
-                    tint = ErrorRed.copy(alpha = 0.8f),
+                    tint = Color(0xFF94A3B8),
                     modifier = Modifier.size(20.dp)
                 )
             }
